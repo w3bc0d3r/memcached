@@ -18,18 +18,30 @@
 		{
 			fwrite ($this -> conn, "set ".$key." 0 ".$exptime.
 			" ".strlen ($value)."\r\n".$value."\r\n");
+
+			$ret = trim (fgets ($this -> conn, 1024));
+			if ($ret != 'STORED') return false;
+
+			return true;
 		}
 		public function get ($key)
 		{
 			fwrite ($this -> conn, "get ".$key."\r\n");
 
 			$ret = trim (fgets ($this -> conn, 1024));
-			if ($ret != 'STORED') return false;
+			if ($ret == 'END') return false;
 
-			list ($ret, $key, $flags, $size) = explode (' ', trim (fgets ($this -> conn, 1024)));
+			list ($ret, $key, $flags, $size) = explode (' ', $ret);
 			if ($ret != 'VALUE') return false;
 
-			return fread ($this -> conn, $size);
+			$data = fread ($this -> conn, $size);
+			fread ($this -> conn, 2);
+
+			$ret = trim (fgets ($this -> conn, 1024));
+
+			if ($ret == 'END') return $data;
+
+			return false;
 		}
 		public function disconnect ()
 		{
