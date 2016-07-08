@@ -39,16 +39,16 @@
 
 			$ret = trim (fgets ($this -> conn, 1024));
 
-			if ($ret == 'END') return $data;
+			if ($ret != 'END') return false;
 
-			return false;
+			return $data;
 		}
 		public function disconnect ()
 		{
 			fclose ($this -> conn);
 		}
 	}
-
+	
 	$memcached = new memcached;
 	$memcached -> connect ();
 	$memcached -> set ('test', '123');
